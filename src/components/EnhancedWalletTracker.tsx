@@ -30,7 +30,7 @@ const EnhancedWalletTracker = () => {
     
     setTrackedWallets(prev => [{ address: walletAddress }, ...prev]);
     setWalletAddress("");
-    toast.success(`Started tracking wallet: ${walletAddress}`);
+    toast.success(`Started tracking wallet: ${walletAddress.substring(0, 8)}...`);
   };
 
   const handleCopyTrade = (walletAddress: string) => {
@@ -43,15 +43,15 @@ const EnhancedWalletTracker = () => {
   };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gray-700 dark:text-gray-200 flex items-center">
+    <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-purple-900/80 to-indigo-700/80 backdrop-blur-sm">
+      <CardHeader className="bg-purple-900/30 backdrop-blur-sm">
+        <CardTitle className="text-xl font-semibold text-white flex items-center">
           <Eye className="h-5 w-5 mr-2" />
           Wallet Tracker
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <CardContent className="pt-6">
+        <p className="text-sm text-purple-100 mb-4">
           Monitor other Solana wallets for activity and copy their trades.
         </p>
         
@@ -61,28 +61,31 @@ const EnhancedWalletTracker = () => {
             value={walletAddress}
             onChange={handleWalletAddressChange}
             placeholder="Enter wallet address to track"
-            className="flex-grow"
+            className="flex-grow bg-white/10 border-purple-500/30 text-white placeholder:text-purple-200/60"
           />
           
-          <Button onClick={trackWallet}>
+          <Button 
+            onClick={trackWallet}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
             Track
           </Button>
         </div>
         
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-purple-800/30 backdrop-blur-sm rounded-xl border border-purple-500/30">
+          <h3 className="text-sm font-medium p-3 border-b border-purple-500/30 text-purple-100">
             Tracked Wallets
           </h3>
 
           {trackedWallets.length > 0 ? (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="divide-y divide-purple-500/30">
               {trackedWallets.map((wallet, index) => (
                 <div key={index} className="p-3 flex justify-between items-center">
                   <div>
-                    <p className="font-medium text-gray-800 dark:text-gray-200">
+                    <p className="font-medium text-white">
                       {truncateAddress(wallet.address)}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-purple-300">
                       {wallet.label || "Monitoring activity"}
                     </p>
                   </div>
@@ -91,7 +94,7 @@ const EnhancedWalletTracker = () => {
                       size="sm" 
                       variant="outline"
                       onClick={() => handleCopyTrade(wallet.address)}
-                      className="group"
+                      className="group border-purple-500/50 text-white hover:bg-purple-600"
                     >
                       <Copy className="h-4 w-4 mr-1" />
                       Copy Trade
@@ -101,7 +104,7 @@ const EnhancedWalletTracker = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-6">
+            <p className="text-purple-200 text-center py-6">
               No wallets being tracked
             </p>
           )}

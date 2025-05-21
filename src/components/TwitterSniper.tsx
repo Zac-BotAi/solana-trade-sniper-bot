@@ -40,16 +40,16 @@ const TwitterSniper = ({ onSnipe }: TwitterSniperProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-gray-700 dark:text-gray-200 flex items-center">
+    <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-blue-900/80 to-blue-700/80 backdrop-blur-sm">
+      <CardHeader className="bg-blue-900/30 backdrop-blur-sm">
+        <CardTitle className="text-xl font-semibold text-white flex items-center">
           <Twitter className="h-5 w-5 mr-2 text-blue-400" />
-          Twitter Sniper
+          Twitter Tweet Tracker
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Track tweets from crypto influencers and automatically snipe mentioned tokens.
+      <CardContent className="pt-6">
+        <p className="text-sm text-blue-100 mb-4">
+          Monitor tweets from crypto influencers and automatically snipe mentioned tokens.
         </p>
 
         <div className="flex space-x-2 mb-6">
@@ -57,32 +57,37 @@ const TwitterSniper = ({ onSnipe }: TwitterSniperProps) => {
             <span className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">@</span>
             <Input
               placeholder="username"
-              className="pl-8"
+              className="pl-8 bg-white/10 border-blue-500/30 text-white placeholder:text-blue-200/60"
               value={twitterUsername}
               onChange={handleUsernameChange}
             />
           </div>
-          <Button onClick={startTracking}>Track</Button>
+          <Button 
+            onClick={startTracking}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Track
+          </Button>
         </div>
 
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-blue-800/30 backdrop-blur-sm rounded-xl border border-blue-500/30">
+          <h3 className="text-sm font-medium p-3 border-b border-blue-500/30 text-blue-100">
             Tracked Accounts
           </h3>
 
           {trackedAccounts.length > 0 ? (
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            <div className="divide-y divide-blue-500/30">
               {trackedAccounts.map((account) => (
                 <div key={account} className="p-3 flex justify-between items-center">
                   <div>
-                    <p className="font-medium text-gray-800 dark:text-gray-200">@{account}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Monitoring for token mentions</p>
+                    <p className="font-medium text-white">@{account}</p>
+                    <p className="text-xs text-blue-300">Monitoring for token mentions</p>
                   </div>
                   <Button 
                     size="sm" 
                     variant="outline"
                     onClick={() => handleSnipe(account)}
-                    className="group"
+                    className="group border-blue-500/50 text-white hover:bg-blue-600"
                   >
                     Snipe
                     <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
@@ -91,7 +96,7 @@ const TwitterSniper = ({ onSnipe }: TwitterSniperProps) => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-6">
+            <p className="text-blue-200 text-center py-6">
               No accounts being tracked yet
             </p>
           )}

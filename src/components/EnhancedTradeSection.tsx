@@ -1,10 +1,12 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowRight, Copy, Twitter } from "lucide-react";
+import { ArrowRight, Copy, Twitter, Zap } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface EnhancedTradeSectionProps {
   walletBalance: number;
@@ -124,6 +126,16 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
     toast.success(`Selected ${token.name} (${token.symbol}) for trading`);
   };
   
+  // Copy token metadata
+  const handleCopyTokenMetadata = (token: TradeToken) => {
+    const metadata = `Token: ${token.name} (${token.symbol})
+Price: $${token.price}
+24h Change: ${token.change24h >= 0 ? '+' : ''}${token.change24h}%`;
+    
+    navigator.clipboard.writeText(metadata);
+    toast.success(`Copied ${token.symbol} metadata to clipboard`);
+  };
+  
   // Simulate a single trade
   const simulateSingleTrade = () => {
     const amount = typeof tradeAmount === "string" ? parseFloat(tradeAmount) : tradeAmount;
@@ -210,7 +222,12 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
   return (
     <div className="space-y-6">
       {(copyTradeWallet || twitterUsername) && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 dark:from-blue-900/30 dark:to-indigo-900/30 p-4 rounded-xl border border-blue-200 dark:border-blue-800 backdrop-blur-sm"
+        >
           {copyTradeWallet && (
             <div className="flex items-center text-blue-700 dark:text-blue-300">
               <Copy className="h-5 w-5 mr-2" />
@@ -222,20 +239,21 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
           {twitterUsername && (
             <div className="flex items-center text-blue-700 dark:text-blue-300">
               <Twitter className="h-5 w-5 mr-2" />
-              <span>Twitter Snipe Mode: Following @{twitterUsername}</span>
+              <span>Twitter Tracker Mode: Following @{twitterUsername}</span>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-gray-700 dark:text-gray-200">
+      <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-md">
+        <CardHeader className="bg-gradient-to-r from-purple-800/30 to-blue-800/30 backdrop-blur-sm">
+          <CardTitle className="text-xl font-semibold text-white flex items-center">
+            <Zap className="h-5 w-5 mr-2 text-yellow-400" />
             Trading & Sniping
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">1% Trading Fee Applied</p>
+        <CardContent className="pt-6">
+          <p className="text-sm text-gray-400 dark:text-gray-300 mb-4">1% Trading Fee Applied</p>
           
           <div className="flex flex-col gap-3 mb-6">
             <Input
@@ -246,12 +264,13 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
               placeholder="Enter trade amount (SOL)"
               min="0.01"
               step="0.01"
+              className="bg-white/10 border-gray-700 text-white placeholder:text-gray-400"
             />
             
             <Button 
               onClick={toggleSniping}
               variant={isSniping ? "destructive" : "default"}
-              className="w-full relative overflow-hidden"
+              className={`w-full relative overflow-hidden ${isSniping ? "bg-red-600 hover:bg-red-700" : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"}`}
               disabled={!tradeAmount}
             >
               {isSniping ? "Stop Sniping" : "Start Sniping"}
@@ -261,60 +280,84 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
             </Button>
             
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-500 dark:text-gray-400">Trade Fee</p>
+              <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
+                <p className="text-gray-400">Trade Fee</p>
                 <p className="text-lg font-bold text-red-500">{tradeFee.toFixed(4)} SOL</p>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                <p className="text-gray-500 dark:text-gray-400">Net Amount</p>
-                <p className="text-lg font-bold text-green-600">{netAmount.toFixed(4)} SOL</p>
+              <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
+                <p className="text-gray-400">Net Amount</p>
+                <p className="text-lg font-bold text-green-500">{netAmount.toFixed(4)} SOL</p>
               </div>
             </div>
           </div>
           
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            <h3 className="text-lg font-semibold text-white mb-3">
               Select Token
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {mockTokens.map((token) => (
-                <div 
+                <motion.div 
                   key={token.id}
-                  className={`flex flex-col items-center p-3 rounded-xl border cursor-pointer transition-all card-hover ${
+                  whileHover={{ y: -5, scale: 1.03 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className={`flex flex-col items-center p-3 rounded-xl border cursor-pointer relative overflow-hidden ${
                     selectedToken?.id === token.id 
-                      ? "border-primary bg-primary/5" 
-                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50"
+                      ? "border-primary bg-primary/20" 
+                      : "border-gray-700 bg-gray-800/50 hover:border-gray-500"
                   }`}
                   onClick={() => handleTokenSelect(token)}
                 >
+                  {selectedToken?.id === token.id && (
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10" />
+                  )}
+                  
                   <img 
                     src={token.image} 
                     alt={token.symbol} 
-                    className="w-12 h-12 mb-2 rounded-full"
+                    className="w-12 h-12 mb-2 rounded-full filter drop-shadow-lg"
                   />
-                  <p className="font-medium text-sm">{token.symbol}</p>
+                  <p className="font-medium text-sm text-white">{token.symbol}</p>
                   <p className={`text-xs ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(1)}%
                   </p>
-                </div>
+                  
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="mt-2 text-xs py-0 h-6 text-gray-300 hover:text-white hover:bg-gray-700/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopyTokenMetadata(token);
+                    }}
+                  >
+                    <Copy className="h-3 w-3 mr-1" /> Copy
+                  </Button>
+                </motion.div>
               ))}
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-3">Live Trades</h3>
-            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 max-h-[250px] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-white mb-3">Live Trades</h3>
+            <div className="bg-black/40 backdrop-blur-lg p-4 rounded-xl border border-gray-700 max-h-[250px] overflow-y-auto">
               {tradeLog.length > 0 ? (
                 tradeLog.map((entry, index) => (
-                  <div key={index} className="py-2 border-b border-dashed border-gray-200 dark:border-gray-700 last:border-0 text-sm text-gray-700 dark:text-gray-300">
+                  <motion.div 
+                    key={index} 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="py-2 border-b border-dashed border-gray-700 last:border-0 text-sm text-gray-300"
+                  >
                     <span className={`font-bold ${entry.startsWith('Bought') ? 'text-green-500' : 'text-red-500'}`}>
                       {entry.split(" ")[0]}
                     </span>{" "}
                     {entry.split(" ").slice(1).join(" ")}
-                  </div>
+                  </motion.div>
                 ))
               ) : (
-                <p className="text-gray-500 dark:text-gray-400 text-center">No trades yet. Click "Start Sniping"!</p>
+                <p className="text-gray-400 text-center">No trades yet. Click "Start Sniping"!</p>
               )}
             </div>
           </div>
