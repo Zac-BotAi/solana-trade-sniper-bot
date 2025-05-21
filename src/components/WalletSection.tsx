@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import BackButton from "@/components/BackButton";
 
 interface WalletSectionProps {
   walletAddress: string;
@@ -29,6 +29,11 @@ const WalletSection = ({ walletAddress, walletBalance, generateWallet }: WalletS
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center mb-4">
+        <BackButton />
+        <h1 className="text-2xl font-semibold ml-2">Wallet</h1>
+      </div>
+      
       <Card>
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-gray-700">

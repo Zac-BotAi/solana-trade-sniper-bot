@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Twitter, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,6 +46,7 @@ const TwitterSniper = ({ onSnipe }: TwitterSniperProps) => {
           Twitter Tweet Tracker
         </CardTitle>
       </CardHeader>
+      
       <CardContent className="pt-6">
         <p className="text-sm text-blue-100 mb-4">
           Monitor tweets from crypto influencers and automatically snipe mentioned tokens.
