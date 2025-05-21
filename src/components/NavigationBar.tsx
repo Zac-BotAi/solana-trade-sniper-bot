@@ -4,6 +4,7 @@ import { Home, Wallet, TrendingUp, Eye, CircleDollarSign, Bell, Sun, Moon } from
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import ProfileMenu from "@/components/ProfileMenu";
 
 interface NavigationBarProps {
   currentPage: string;
@@ -61,10 +62,7 @@ const NavigationBar = ({ currentPage, setCurrentPage }: NavigationBarProps) => {
             )}
           </button>
           
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>ME</AvatarFallback>
-          </Avatar>
+          <ProfileMenu />
         </div>
       </div>
 

@@ -4,10 +4,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import Dashboard from "@/components/Dashboard";
 import TradeSection from "@/components/TradeSection";
-import WalletTracker from "@/components/WalletTracker";
+import EnhancedTradeSection from "@/components/EnhancedTradeSection";
+import TrackerPage from "@/components/TrackerPage";
 import WalletSection from "@/components/WalletSection";
 import TokenOperations from "@/components/TokenOperations";
+import TokenPairsList from "@/components/TokenPairsList";
 import NavigationBar from "@/components/NavigationBar";
+import Footer from "@/components/Footer";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Main app page
@@ -79,12 +82,16 @@ const Index = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
+              className="py-4"
             >
               <Dashboard 
                 walletBalance={walletBalance} 
                 totalTrades={totalTrades}
                 onNavigate={setCurrentPage} 
               />
+              <div className="mt-6">
+                <TokenPairsList />
+              </div>
             </motion.div>
           )}
           
@@ -96,6 +103,7 @@ const Index = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
+              className="py-4"
             >
               <TokenOperations 
                 walletBalance={walletBalance}
@@ -112,8 +120,9 @@ const Index = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
+              className="py-4"
             >
-              <TradeSection 
+              <EnhancedTradeSection
                 walletBalance={walletBalance}
                 updateWalletBalance={updateWalletBalance}
                 updateTotalTrades={updateTotalTrades}
@@ -129,8 +138,9 @@ const Index = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
+              className="py-4"
             >
-              <WalletTracker />
+              <TrackerPage />
             </motion.div>
           )}
           
@@ -142,6 +152,7 @@ const Index = () => {
               exit="out"
               variants={pageVariants}
               transition={pageTransition}
+              className="py-4"
             >
               <WalletSection 
                 walletAddress={walletAddress}
@@ -152,6 +163,8 @@ const Index = () => {
           )}
         </AnimatePresence>
       </div>
+
+      <Footer />
     </div>
   );
 };
