@@ -8,6 +8,7 @@ import WalletTracker from "@/components/WalletTracker";
 import WalletSection from "@/components/WalletSection";
 import TokenOperations from "@/components/TokenOperations";
 import NavigationBar from "@/components/NavigationBar";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Main app page
 const Index = () => {
@@ -49,51 +50,108 @@ const Index = () => {
   const updateTotalTrades = () => {
     setTotalTrades(prev => prev + 1);
   };
+
+  // Page transition variants
+  const pageVariants = {
+    initial: { opacity: 0, y: 10 },
+    in: { opacity: 1, y: 0 },
+    out: { opacity: 0, y: -10 }
+  };
+
+  // Page transition settings
+  const pageTransition = {
+    type: "tween",
+    ease: "easeInOut",
+    duration: 0.3
+  };
   
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold text-center text-gray-800 my-4">
-        Solana Trading Bot
-      </h1>
-      
-      <div className="flex-1 w-full max-w-xl mx-auto px-4 pb-20">
-        {currentPage === "dashboard" && (
-          <Dashboard 
-            walletBalance={walletBalance} 
-            totalTrades={totalTrades}
-            onNavigate={setCurrentPage} 
-          />
-        )}
-        
-        {currentPage === "mint" && (
-          <TokenOperations 
-            walletBalance={walletBalance}
-            updateWalletBalance={updateWalletBalance}
-          />
-        )}
-        
-        {currentPage === "trade" && (
-          <TradeSection 
-            walletBalance={walletBalance}
-            updateWalletBalance={updateWalletBalance}
-            updateTotalTrades={updateTotalTrades}
-          />
-        )}
-        
-        {currentPage === "tracker" && (
-          <WalletTracker />
-        )}
-        
-        {currentPage === "wallet" && (
-          <WalletSection 
-            walletAddress={walletAddress}
-            walletBalance={walletBalance}
-            generateWallet={generateWallet}
-          />
-        )}
-      </div>
-      
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <NavigationBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      
+      <div className="flex-1 w-full max-w-xl mx-auto px-4 pt-16 pb-20">
+        <AnimatePresence mode="wait">
+          {currentPage === "dashboard" && (
+            <motion.div
+              key="dashboard"
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <Dashboard 
+                walletBalance={walletBalance} 
+                totalTrades={totalTrades}
+                onNavigate={setCurrentPage} 
+              />
+            </motion.div>
+          )}
+          
+          {currentPage === "mint" && (
+            <motion.div
+              key="mint"
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <TokenOperations 
+                walletBalance={walletBalance}
+                updateWalletBalance={updateWalletBalance}
+              />
+            </motion.div>
+          )}
+          
+          {currentPage === "trade" && (
+            <motion.div
+              key="trade"
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <TradeSection 
+                walletBalance={walletBalance}
+                updateWalletBalance={updateWalletBalance}
+                updateTotalTrades={updateTotalTrades}
+              />
+            </motion.div>
+          )}
+          
+          {currentPage === "tracker" && (
+            <motion.div
+              key="tracker"
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <WalletTracker />
+            </motion.div>
+          )}
+          
+          {currentPage === "wallet" && (
+            <motion.div
+              key="wallet"
+              initial="initial"
+              animate="in"
+              exit="out"
+              variants={pageVariants}
+              transition={pageTransition}
+            >
+              <WalletSection 
+                walletAddress={walletAddress}
+                walletBalance={walletBalance}
+                generateWallet={generateWallet}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
