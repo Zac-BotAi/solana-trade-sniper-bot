@@ -3,10 +3,16 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { ArrowRight, Copy, Twitter, Zap } from "lucide-react";
+import { ArrowRight, Copy, Twitter, Zap, ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import BackButton from "./BackButton";
+
+// Import TradingViewWidget component (created below)
+import TradingViewWidget from "./TradingViewWidget";
 
 interface EnhancedTradeSectionProps {
   walletBalance: number;
@@ -21,6 +27,8 @@ interface TradeToken {
   image: string;
   price: number;
   change24h: number;
+  marketCap: number;
+  volume: number;
 }
 
 const mockTokens: TradeToken[] = [
@@ -31,6 +39,8 @@ const mockTokens: TradeToken[] = [
     image: "https://cryptologos.cc/logos/dogecoin-doge-logo.png",
     price: 0.12,
     change24h: 5.2,
+    marketCap: 15000000,
+    volume: 1500000
   },
   {
     id: "2",
@@ -39,6 +49,8 @@ const mockTokens: TradeToken[] = [
     image: "https://cryptologos.cc/logos/shiba-inu-shib-logo.png",
     price: 0.000028,
     change24h: -2.1,
+    marketCap: 10500000,
+    volume: 890000
   },
   {
     id: "3",
@@ -47,6 +59,8 @@ const mockTokens: TradeToken[] = [
     image: "https://cryptologos.cc/logos/pepe-pepe-logo.png",
     price: 0.0000089,
     change24h: 12.3,
+    marketCap: 5200000,
+    volume: 750000
   },
   {
     id: "4",
@@ -55,6 +69,8 @@ const mockTokens: TradeToken[] = [
     image: "https://cryptologos.cc/logos/floki-inu-floki-logo.png",
     price: 0.000158,
     change24h: 8.7,
+    marketCap: 3800000,
+    volume: 430000
   },
 ];
 
@@ -67,6 +83,7 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
   const [selectedToken, setSelectedToken] = useState<TradeToken | null>(null);
   const [copyTradeWallet, setCopyTradeWallet] = useState<string | null>(null);
   const [twitterUsername, setTwitterUsername] = useState<string | null>(null);
+  const [showTradingView, setShowTradingView] = useState(false);
   
   const location = useLocation();
   
@@ -123,6 +140,7 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
   // Handle token selection
   const handleTokenSelect = (token: TradeToken) => {
     setSelectedToken(token);
+    setShowTradingView(true);
     toast.success(`Selected ${token.name} (${token.symbol}) for trading`);
   };
   
@@ -130,7 +148,9 @@ const EnhancedTradeSection = ({ walletBalance, updateWalletBalance, updateTotalT
   const handleCopyTokenMetadata = (token: TradeToken) => {
     const metadata = `Token: ${token.name} (${token.symbol})
 Price: $${token.price}
-24h Change: ${token.change24h >= 0 ? '+' : ''}${token.change24h}%`;
+24h Change: ${token.change24h >= 0 ? '+' : ''}${token.change24h}%
+Market Cap: $${token.marketCap.toLocaleString()}
+Volume: $${token.volume.toLocaleString()}`;
     
     navigator.clipboard.writeText(metadata);
     toast.success(`Copied ${token.symbol} metadata to clipboard`);
@@ -220,7 +240,22 @@ Price: $${token.price}
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center">
+          <BackButton />
+          <h1 className="text-2xl font-semibold ml-2 text-white">Trading & Sniping</h1>
+        </div>
+        {selectedToken && (
+          <Badge 
+            variant="outline" 
+            className="text-sm py-1 px-3 rounded-full border-green-500/30 text-green-400 bg-green-900/20"
+          >
+            Selected: {selectedToken.symbol}
+          </Badge>
+        )}
+      </div>
+
       {(copyTradeWallet || twitterUsername) && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -245,124 +280,257 @@ Price: $${token.price}
         </motion.div>
       )}
 
-      <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-gray-900/90 to-gray-800/90 backdrop-blur-md">
-        <CardHeader className="bg-gradient-to-r from-purple-800/30 to-blue-800/30 backdrop-blur-sm">
-          <CardTitle className="text-xl font-semibold text-white flex items-center">
-            <Zap className="h-5 w-5 mr-2 text-yellow-400" />
-            Trading & Sniping
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <p className="text-sm text-gray-400 dark:text-gray-300 mb-4">1% Trading Fee Applied</p>
-          
-          <div className="flex flex-col gap-3 mb-6">
-            <Input
-              type="number"
-              id="tradeAmount"
-              value={tradeAmount}
-              onChange={handleTradeAmountChange}
-              placeholder="Enter trade amount (SOL)"
-              min="0.01"
-              step="0.01"
-              className="bg-white/10 border-gray-700 text-white placeholder:text-gray-400"
-            />
-            
-            <Button 
-              onClick={toggleSniping}
-              variant={isSniping ? "destructive" : "default"}
-              className={`w-full relative overflow-hidden ${isSniping ? "bg-red-600 hover:bg-red-700" : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"}`}
-              disabled={!tradeAmount}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {showTradingView && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-[#1a1f2c] rounded-xl border border-gray-800 overflow-hidden h-[500px]"
             >
-              {isSniping ? "Stop Sniping" : "Start Sniping"}
-              {isSniping && (
-                <span className="absolute inset-0 animate-pulse bg-white/10 rounded-md" />
-              )}
-            </Button>
-            
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
-                <p className="text-gray-400">Trade Fee</p>
-                <p className="text-lg font-bold text-red-500">{tradeFee.toFixed(4)} SOL</p>
-              </div>
-              <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
-                <p className="text-gray-400">Net Amount</p>
-                <p className="text-lg font-bold text-green-500">{netAmount.toFixed(4)} SOL</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white mb-3">
-              Select Token
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {mockTokens.map((token) => (
-                <motion.div 
-                  key={token.id}
-                  whileHover={{ y: -5, scale: 1.03 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className={`flex flex-col items-center p-3 rounded-xl border cursor-pointer relative overflow-hidden ${
-                    selectedToken?.id === token.id 
-                      ? "border-primary bg-primary/20" 
-                      : "border-gray-700 bg-gray-800/50 hover:border-gray-500"
-                  }`}
-                  onClick={() => handleTokenSelect(token)}
-                >
-                  {selectedToken?.id === token.id && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10" />
+              <div className="flex items-center justify-between bg-[#252A37] p-3 border-b border-gray-800">
+                <div className="flex items-center">
+                  {selectedToken && (
+                    <>
+                      <Avatar className="h-8 w-8 mr-2">
+                        <AvatarImage src={selectedToken.image} alt={selectedToken.symbol} />
+                        <AvatarFallback>{selectedToken.symbol.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <span className="text-white font-medium">{selectedToken.symbol}/USD</span>
+                        <div className="flex items-center">
+                          <Badge 
+                            variant="outline" 
+                            className={`mr-2 py-0 px-1.5 ${selectedToken.change24h >= 0 ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-red-900/20 text-red-400 border-red-500/30'}`}
+                          >
+                            {selectedToken.change24h >= 0 ? '+' : ''}{selectedToken.change24h}%
+                          </Badge>
+                          <span className="text-gray-300 text-xs">
+                            MC ${selectedToken.marketCap.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  
-                  <img 
-                    src={token.image} 
-                    alt={token.symbol} 
-                    className="w-12 h-12 mb-2 rounded-full filter drop-shadow-lg"
-                  />
-                  <p className="font-medium text-sm text-white">{token.symbol}</p>
-                  <p className={`text-xs ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(1)}%
-                  </p>
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="mt-2 text-xs py-0 h-6 text-gray-300 hover:text-white hover:bg-gray-700/50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyTokenMetadata(token);
-                    }}
-                  >
-                    <Copy className="h-3 w-3 mr-1" /> Copy
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm" className="h-8 border-blue-500/30 bg-blue-900/20 text-blue-400">
+                    1m
                   </Button>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-3">Live Trades</h3>
-            <div className="bg-black/40 backdrop-blur-lg p-4 rounded-xl border border-gray-700 max-h-[250px] overflow-y-auto">
-              {tradeLog.length > 0 ? (
-                tradeLog.map((entry, index) => (
+                  <Button variant="ghost" size="sm" className="h-8 text-gray-400">
+                    5m
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 text-gray-400">
+                    15m
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 text-gray-400">
+                    1h
+                  </Button>
+                </div>
+              </div>
+              
+              <TradingViewWidget symbol={selectedToken ? `${selectedToken.symbol}USD` : "BTCUSD"} />
+            </motion.div>
+          )}
+
+          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-[#1a1f2c] to-[#15181e] backdrop-blur-md">
+            <CardHeader className="bg-[#252A37]">
+              <CardTitle className="text-xl font-semibold text-white flex items-center">
+                <Zap className="h-5 w-5 mr-2 text-yellow-400" />
+                Trading Controls
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-300 mb-4">1% Trading Fee Applied</p>
+              
+              <div className="flex flex-col gap-3 mb-6">
+                <Input
+                  type="number"
+                  id="tradeAmount"
+                  value={tradeAmount}
+                  onChange={handleTradeAmountChange}
+                  placeholder="Enter trade amount (SOL)"
+                  min="0.01"
+                  step="0.01"
+                  className="bg-white/10 border-gray-700 text-white placeholder:text-gray-400"
+                />
+                
+                <Button 
+                  onClick={toggleSniping}
+                  variant={isSniping ? "destructive" : "default"}
+                  className={`w-full relative overflow-hidden ${isSniping ? "bg-red-600 hover:bg-red-700" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"}`}
+                  disabled={!tradeAmount}
+                >
+                  {isSniping ? "Stop Sniping" : "Start Sniping"}
+                  {isSniping && (
+                    <span className="absolute inset-0 animate-pulse bg-white/10 rounded-md" />
+                  )}
+                </Button>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
+                    <p className="text-gray-400">Trade Fee</p>
+                    <p className="text-lg font-bold text-red-500">{tradeFee.toFixed(4)} SOL</p>
+                  </div>
+                  <div className="bg-black/40 backdrop-blur-lg p-3 rounded-lg border border-gray-700">
+                    <p className="text-gray-400">Net Amount</p>
+                    <p className="text-lg font-bold text-green-500">{netAmount.toFixed(4)} SOL</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-3">Live Trades</h3>
+                <div className="bg-black/40 backdrop-blur-lg p-4 rounded-xl border border-gray-700 max-h-[250px] overflow-y-auto">
+                  {tradeLog.length > 0 ? (
+                    tradeLog.map((entry, index) => (
+                      <motion.div 
+                        key={index} 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="py-2 border-b border-dashed border-gray-700 last:border-0 text-sm text-gray-300"
+                      >
+                        <span className={`font-bold ${entry.startsWith('Bought') ? 'text-green-500' : 'text-red-500'}`}>
+                          {entry.split(" ")[0]}
+                        </span>{" "}
+                        {entry.split(" ").slice(1).join(" ")}
+                      </motion.div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400 text-center">No trades yet. Click "Start Sniping"!</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="space-y-6">
+          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-[#1a1f2c] to-[#15181e] backdrop-blur-md">
+            <CardHeader className="bg-[#252A37]">
+              <CardTitle className="text-lg font-semibold text-white">
+                Select Token
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="py-4">
+              <div className="space-y-3">
+                {mockTokens.map((token) => (
                   <motion.div 
-                    key={index} 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="py-2 border-b border-dashed border-gray-700 last:border-0 text-sm text-gray-300"
+                    key={token.id}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer relative overflow-hidden ${
+                      selectedToken?.id === token.id 
+                        ? "border-blue-500 bg-blue-900/20" 
+                        : "border-gray-700 bg-gray-800/50 hover:border-gray-500"
+                    }`}
+                    onClick={() => handleTokenSelect(token)}
                   >
-                    <span className={`font-bold ${entry.startsWith('Bought') ? 'text-green-500' : 'text-red-500'}`}>
-                      {entry.split(" ")[0]}
-                    </span>{" "}
-                    {entry.split(" ").slice(1).join(" ")}
+                    <div className="flex items-center">
+                      <Avatar className="h-10 w-10 mr-3">
+                        <AvatarImage src={token.image} alt={token.name} className="object-cover" />
+                        <AvatarFallback className="bg-gray-800 text-white">
+                          {token.symbol.substring(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-white">{token.symbol}</p>
+                        <div className="flex items-center">
+                          <p className={`text-xs ${token.change24h >= 0 ? 'text-green-500' : 'text-red-500'} mr-2`}>
+                            {token.change24h >= 0 ? '+' : ''}{token.change24h}%
+                          </p>
+                          <p className="text-xs text-gray-400">${token.price.toFixed(token.price < 0.001 ? 8 : 4)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      {token.change24h >= 0 ? (
+                        <TrendingUp className="h-4 w-4 text-green-500 mr-2" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4 text-red-500 mr-2" />
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 p-0 w-7 text-gray-400 hover:text-white hover:bg-gray-700/70 rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyTokenMetadata(token);
+                        }}
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </motion.div>
-                ))
-              ) : (
-                <p className="text-gray-400 text-center">No trades yet. Click "Start Sniping"!</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+              
+              <Button className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700">
+                View All Tokens
+              </Button>
+            </CardContent>
+          </Card>
+          
+          <Card className="overflow-hidden border-none shadow-lg bg-gradient-to-br from-[#1a1f2c] to-[#15181e] backdrop-blur-md">
+            <CardHeader className="bg-[#252A37]">
+              <CardTitle className="text-lg font-semibold text-white">
+                Trading Stats
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-green-900/30 flex items-center justify-center mr-3">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div>
+                      <p className="text-gray-300 text-sm">Total PnL</p>
+                      <p className="text-white font-medium">+$1,245.67</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">+12.3%</Badge>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-blue-900/30 flex items-center justify-center mr-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-blue-400">
+                        <path d="M19 5H5v14h14V5z" />
+                        <path d="M19 5L5 19" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-gray-300 text-sm">Success Rate</p>
+                      <p className="text-white font-medium">78%</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-400 text-sm">Last 30d</p>
+                </div>
+                
+                <div className="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-purple-900/30 flex items-center justify-center mr-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-purple-400">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-gray-300 text-sm">Avg Hold Time</p>
+                      <p className="text-white font-medium">3.2 hours</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">-15%</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

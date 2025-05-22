@@ -3,12 +3,10 @@ import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner"; 
 import { toast } from "sonner";
 import Dashboard from "@/components/Dashboard";
-import TradeSection from "@/components/TradeSection";
 import EnhancedTradeSection from "@/components/EnhancedTradeSection";
 import TrackerPage from "@/components/TrackerPage";
 import WalletSection from "@/components/WalletSection";
 import TokenOperations from "@/components/TokenOperations";
-import TokenPairsList from "@/components/TokenPairsList";
 import NavigationBar from "@/components/NavigationBar";
 import Footer from "@/components/Footer";
 import { AnimatePresence, motion } from "framer-motion";
@@ -33,6 +31,8 @@ const Index = () => {
   // Initialize wallet on page load
   useEffect(() => {
     generateWallet();
+    // Set dark mode by default
+    document.documentElement.classList.add('dark');
   }, []);
   
   // Generate wallet function
@@ -69,7 +69,7 @@ const Index = () => {
   };
   
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-[#0A0B0E] dark:bg-[#0A0B0E] text-white transition-colors duration-300">
       <NavigationBar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       
       <div className="flex-1 w-full max-w-xl mx-auto px-4 pt-16 pb-20">
@@ -89,9 +89,6 @@ const Index = () => {
                 totalTrades={totalTrades}
                 onNavigate={setCurrentPage} 
               />
-              <div className="mt-6">
-                <TokenPairsList />
-              </div>
             </motion.div>
           )}
           
