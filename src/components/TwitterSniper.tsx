@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Twitter, ArrowRight, Search, User, Heart, MessageCircle, RefreshCw } from "lucide-react";
+import { Twitter, ArrowRight, Search, User, Heart, MessageCircle, RefreshCw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
